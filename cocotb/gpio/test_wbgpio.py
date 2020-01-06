@@ -22,6 +22,8 @@ from cocotb.triggers import FallingEdge
 from cocotb.triggers import ClockCycles
 from cocotb.binary import BinaryValue
 
+from cocomod.wishbone.driver import WishboneMaster
+from cocomod.wishbone.driver import WBOp
 
 class WbGpio(object):
     """ test class for Spi2KszTest
@@ -41,6 +43,16 @@ class WbGpio(object):
         self.clock = Clock(self._dut.clock, self.PERIOD[0], self.PERIOD[1])
         self._clock_thread = cocotb.fork(self.clock.start())
 
+        self.wbs = WishboneMaster(dut, "io_wbs", dut.clock,
+                          width=16,   # size of data bus
+                          timeout=10, # in clock cycle number
+                          signals_dict={"cyc":  "cyc_i",
+                                      "stb":  "stb_i",
+                                      "we":   "we_i",
+                                      "adr":  "adr_i",
+                                      "datwr":"dat_i",
+                                      "datrd":"dat_o",
+                                      "ack":  "ack_o" })
     @cocotb.coroutine
     def reset(self):
         self._dut.reset <= 1
@@ -55,4 +67,7 @@ class WbGpio(object):
 def test_read_version(dut):
     wbgpio = WbGpio(dut)
     yield wbgpio.reset()
+    wbRes = yield wbgpio.wbs.send_cycle([WBOp(addr) for addr in range(4)])
+    rvalues = [wb.datrd for wb in wbRes]
+    dut.log.info(f"Returned values : {rvalues}")
     yield Timer(1, units="us")
