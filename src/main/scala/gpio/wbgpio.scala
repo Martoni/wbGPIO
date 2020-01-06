@@ -7,7 +7,7 @@ import chisel3.Driver
 
 import wbplumbing.WbSlave
 
-class WbGpio(val portsize: Int = 16) {
+class WbGpio(val portsize: Int = 16) extends Module {
   val io = IO(new Bundle{
      val wbs = new WbSlave(16, 2, "mdio")
 
@@ -20,10 +20,10 @@ class WbGpio(val portsize: Int = 16) {
   val version = 1
 
   /* registers */
-  val STATUSADDR := 0.U // R
-  val DIRADDR    := 1.U // R/W
-  val READADDR   := 2.U // R
-  val WRITEADDR  := 3.U // R/W
+  val STATUSADDR = 0.U // R
+  val DIRADDR    = 1.U // R/W
+  val READADDR   = 2.U // R
+  val WRITEADDR  = 3.U // R/W
 
   /* status (R) : 0x0
    *  | X .. 8|   7..0  |
@@ -64,7 +64,7 @@ class WbGpio(val portsize: Int = 16) {
   val swbinit::swbread::swbwrite::Nil = Enum(3)
   val wbSm = RegInit(swbinit)
   val ackReg = RegInit(false.B)
-  val wbReadReg = RegInit(0.U(dataSize.W))
+  val wbReadReg = RegInit(0.U(portsize.W))
 
   ackReg := false.B
   switch(wbSm){
@@ -112,4 +112,9 @@ class WbGpio(val portsize: Int = 16) {
   io.wbs.dat_o := wbReadReg
   io.wbs.ack_o := ackReg
 
+}
+
+object WbGpio extends App {
+  println("Generating verilog for simulation test")
+  chisel3.Driver.execute(Array[String](), () => new WbGpio(portsize=16))
 }

@@ -1,0 +1,3 @@
+[submodule "cocotb/chisverilogutils"]
+	path = cocotb/chisverilogutils
+	url = https://github.com/Martoni/chisverilogutils.git
