@@ -33,6 +33,11 @@ class WbGpio(object):
     # clock frequency is 50Mhz
     PERIOD = (20, "ns")
 
+    STATUSADDR = 0
+    DIRADDR    = 1
+    READADDR   = 2
+    WRITEADDR  = 3
+
     def __init__(self, dut):
         if sys.version_info[0] < 3:
             raise Exception("Must be using Python 3")
@@ -53,6 +58,9 @@ class WbGpio(object):
                                       "datwr":"dat_i",
                                       "datrd":"dat_o",
                                       "ack":  "ack_o" })
+    def get_dut_version_str(self):
+        return "{}".format(self._dut.version)
+
     @cocotb.coroutine
     def reset(self):
         self._dut.reset <= 1
@@ -67,7 +75,40 @@ class WbGpio(object):
 def test_read_version(dut):
     wbgpio = WbGpio(dut)
     yield wbgpio.reset()
+    dut.log.info(f"Version {wbgpio.get_dut_version_str()}")
     wbRes = yield wbgpio.wbs.send_cycle([WBOp(addr) for addr in range(4)])
     rvalues = [wb.datrd for wb in wbRes]
     dut.log.info(f"Returned values : {rvalues}")
+    if rvalues[0].binstr[-8:] != wbgpio.get_dut_version_str():
+        msg = (f"wrong version read {rvalues[0].binstr[-8:]}, " +
+              f"should be {wbgpio.get_dut_version_str()}")
+        dut.log.error(msg)
+        raise TestError(msg)
     yield Timer(1, units="us")
+
+@cocotb.test()#skip=True
+def test_change_dir_read_value(dut):
+    """ Changing direction of some bits and read value """
+    wbgpio = WbGpio(dut)
+    yield wbgpio.reset()
+    dut.log.info(f"Version {wbgpio.get_dut_version_str()}")
+    dirv = 0xCAFE
+    wbRes = yield wbgpio.wbs.send_cycle([WBOp(wbgpio.DIRADDR, dirv),
+                                         WBOp(wbgpio.DIRADDR)])
+    rvalues = [wb.datrd.integer for wb in wbRes]
+    dut.log.info(f"Returned values : {[hex(v) for v in rvalues]}")
+    if rvalues[-1] != dirv:
+        msg = (f"Wrong direction value {hex(rvalues[-1])}, " +
+               f" should be {hex(dirv)}")
+
+    testv = 0xCAFE
+    dut.io_inport = testv
+    wbRes = yield wbgpio.wbs.send_cycle([WBOp(wbgpio.READADDR)])
+    readvalue = wbRes[0].datrd.integer
+    wbgpio.log.info(f"read register : {hex(readvalue)}")
+    if readvalue != testv:
+        msg = (f"Wrong value {hex(readvalue)} read," +
+               f" should be {hex(testv)}")
+        wbgpio.log.error(msg)
+        raise TestError(msg)
+    

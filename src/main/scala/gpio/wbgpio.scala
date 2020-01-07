@@ -17,7 +17,7 @@ class WbGpio(val portsize: Int = 16) extends Module {
      val inport = Input(UInt(portsize.W))
   })
 
-  val version = 1
+  val version = dontTouch(RegInit(1.U(8.W)))
 
   /* registers */
   val STATUSADDR = 0.U // R
@@ -31,7 +31,7 @@ class WbGpio(val portsize: Int = 16) extends Module {
    *  |  void | version |
    *  |-------|---------|
    */
-  val statusReg = RegInit(version.U(portsize.W))
+  val statusReg = ("b" ++ "0"*(portsize - 1)).U ## version
 
   /* direction (R/W) : 0x1
    * |    X..0   |
