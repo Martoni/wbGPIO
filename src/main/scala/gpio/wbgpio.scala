@@ -16,7 +16,7 @@ class GpioPort (val portsize: Int = 16) extends Bundle {
 
 class WbGpio(val portsize: Int = 16) extends Module {
   val io = IO(new Bundle{
-     val wbs = new WbSlave(16, 2, "mdio")
+     val wbs = new WbSlave(16, 2, "gpio")
 
      /* tristate buffer port IO */
      val gpio = new GpioPort(portsize) 
