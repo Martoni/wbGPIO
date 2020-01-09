@@ -102,7 +102,7 @@ def test_change_dir_read_value(dut):
                f" should be {hex(dirv)}")
 
     testv = 0xCAFE
-    dut.io_inport = testv
+    dut.io_gpio_inport = testv
     wbRes = yield wbgpio.wbs.send_cycle([WBOp(wbgpio.READADDR)])
     readvalue = wbRes[0].datrd.integer
     wbgpio.log.info(f"read register : {hex(readvalue)}")

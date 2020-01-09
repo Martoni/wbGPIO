@@ -7,14 +7,19 @@ import chisel3.Driver
 
 import wbplumbing.WbSlave
 
+class GpioPort (val portsize: Int = 16) extends Bundle {
+     val outport = Output(UInt(portsize.W))
+     val enport = Output(UInt(portsize.W))
+     val inport = Input(UInt(portsize.W))
+}
+
+
 class WbGpio(val portsize: Int = 16) extends Module {
   val io = IO(new Bundle{
      val wbs = new WbSlave(16, 2, "mdio")
 
      /* tristate buffer port IO */
-     val outport = Output(UInt(portsize.W))
-     val enport = Output(UInt(portsize.W))
-     val inport = Input(UInt(portsize.W))
+     val gpio = new GpioPort(portsize) 
   })
 
   val version = dontTouch(RegInit(1.U(8.W)))
@@ -40,7 +45,7 @@ class WbGpio(val portsize: Int = 16) extends Module {
    * |-----------|
    */
   val dirReg = RegInit(0.U(portsize.W))
-  io.enport := dirReg
+  io.gpio.enport := dirReg
 
   /* read (R) : 0x2
    * |   X..0  |
@@ -57,7 +62,7 @@ class WbGpio(val portsize: Int = 16) extends Module {
    * |----------|
    */
   val writeReg = RegInit(0.U(portsize.W))
-  io.outport:= writeReg
+  io.gpio.outport:= writeReg
 
   // Wishbone state machine
   //     00       01        10
@@ -89,7 +94,7 @@ class WbGpio(val portsize: Int = 16) extends Module {
               wbReadReg := dirReg
             }
             is(READADDR){
-              wbReadReg := io.inport
+              wbReadReg := io.gpio.inport
             }
             is(WRITEADDR){
               wbReadReg := writeReg
