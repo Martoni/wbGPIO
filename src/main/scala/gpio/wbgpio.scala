@@ -13,7 +13,7 @@ class GpioPort (val portsize: Int = 16) extends Bundle {
      val inport = Input(UInt(portsize.W))
 }
 
-
+/* TODO: adding wishbone slave interface parameter in module params */
 class WbGpio(val portsize: Int = 16) extends Module {
   val io = IO(new Bundle{
      val wbs = new WbSlave(16, 2, "gpio")
