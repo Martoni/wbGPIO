@@ -1,9 +1,9 @@
 # wbGPIO
 Wishbone slave General purpose Input Output written in Chisel
 
-Clone with submodule :
-```bash 
-git clone --recurse-submodules https://github.com/Martoni/wbGPIO.git
+Clone :
+```bash
+git clone https://github.com/Martoni/wbGPIO.git
 ```
 
 ## Generate verilog
@@ -14,7 +14,7 @@ Dependencies:
 ## Test with cocotb
 
 Dependencies:
-- [cocomod-wishbone](https://github.com/wallento/cocomod-wishbone) is required to test the module with cocotb
+- [cocotbext-wishbone](https://github.com/wallento/cocotbext-wishbone) is required to test the module with cocotb
 
 To test with cocotb:
 ```bash

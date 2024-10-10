@@ -1,6 +1,0 @@
-[submodule "cocotb/chisverilogutils"]
-	path = cocotb/chisverilogutils
-	url = https://github.com/Martoni/chisverilogutils.git
-[submodule "cocotb/cocomod-wishbone"]
-	path = cocotb/cocomod-wishbone
-	url = https://github.com/Martoni/cocomod-wishbone.git
