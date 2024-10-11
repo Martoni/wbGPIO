@@ -1,0 +1,9 @@
+project/
+target/
+
+cocotb/gpio/__pycache__/
+cocotb/gpio/dump.vcd
+cocotb/gpio/sim_build/
+cocotb/gpio/verilog/
+
+**.swp

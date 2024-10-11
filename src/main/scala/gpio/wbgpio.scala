@@ -1,9 +1,9 @@
 package gpio 
 
 import chisel3._
+import circt.stage.ChiselStage
 import chisel3.util._
 import chisel3.experimental._
-import chisel3.Driver
 
 import wbplumbing.WbSlave
 
@@ -120,6 +120,11 @@ class WbGpio(val portsize: Int = 16) extends Module {
 }
 
 object WbGpio extends App {
-  println("Generating verilog for simulation test")
-  chisel3.Driver.execute(Array[String](), () => new WbGpio(portsize=16))
+  ChiselStage.emitSystemVerilogFile(
+    new WbGpio(portsize=16),
+    firtoolOpts = Array(
+      "-disable-all-randomization",
+      "--lowering-options=disallowLocalVariables", // avoid 'automatic logic'
+      "-strip-debug-info"),
+    args=args)
 }

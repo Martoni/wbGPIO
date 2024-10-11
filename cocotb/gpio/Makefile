@@ -29,8 +29,12 @@
 # https://github.com/cocotb/cocotb/blob/master/examples/ping_tun_tap/tests/Makefile
 
 TOPLEVEL_LANG ?= verilog
-SIM=icarus
-COCOTBIFY=../chisverilogutils/cocotbify/cocotbify.py
+SIM?=icarus
+
+ifeq ($(SIM),verilator)
+EXTRA_ARGS += --trace --trace-structs
+endif
+
 ifneq ($(TOPLEVEL_LANG),verilog)
 
 all:
@@ -50,24 +54,21 @@ endif
 
 PWD=$(shell pwd)
 
-VERILOG_SOURCES = $(PWD)/$(TOPLEVEL)Cocotb.v
+VERILOG_DIR=$(PWD)/verilog
+VERILOG_SOURCES=$(VERILOG_DIR)/$(TOPLEVEL).sv
 MODULE=test_wbgpio
 
-include $(shell cocotb-config --makefiles)/Makefile.inc
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
 endif
 
-$(PWD)/$(TOPLEVEL)Cocotb.v: $(PWD)/../../$(TOPLEVEL).v
-	python $(COCOTBIFY) -v $(PWD)/../../$(TOPLEVEL).v -o $(PWD)/$(TOPLEVEL)Cocotb.v
-
-$(PWD)/../../$(TOPLEVEL).v: ../../src/main/scala/gpio/wbgpio.scala
-	cd $(PWD)/../../;sbt "runMain gpio.WbGpio"
+$(VERILOG_SOURCES): ../../src/main/scala/gpio/wbgpio.scala
+	cd $(PWD)/../../;sbt "runMain gpio.WbGpio --target-dir "$(VERILOG_DIR)""
 
 cleanverilog:
-	-rm $(PWD)/../$(TOPLEVEL).v
+	-rm -rf $(VERILOG_DIR)
 
 mrproper:
 	-rm results.xml
-	-rm $(TOPLEVEL).vcd
-	-rm $(TOPLEVEL)Cocotb.v
+	-rm dump.vcd
+	-rm -rf $(VERILOG_DIR)
