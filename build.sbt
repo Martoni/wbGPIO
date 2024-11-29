@@ -3,8 +3,17 @@ val minorChiselVersion = "2"
 val chiselVersion = majorChiselVersion + "." + minorChiselVersion + ".0"
 
 scalaVersion     := "2.13.12"
-version          := majorChiselVersion + "." + minorChiselVersion + ".0"
+version          := majorChiselVersion + "." + minorChiselVersion + ".1"
 organization     := "org.armadeus"
+
+credentials += Credentials(
+  "GitHub Package Registry",
+  "maven.pkg.github.com",
+  "_",
+  System.getenv("GITHUB_TOKEN")
+)
+
+resolvers ++= Seq("GitHub WbPlumbing Martoni Apache Maven Packages" at "https://maven.pkg.github.com/Martoni/WbPlumbing")
 
 lazy val root = (project in file("."))
   .settings(
@@ -12,7 +21,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "org.chipsalliance" %% "chisel" % chiselVersion,
       "org.scalatest" %% "scalatest" % "3.2.16" % "test",
-      "org.armadeus" %% "wbplumbing" % "6.2.5"
+      "org.armadeus" %% "wbplumbing" % "6.2.6"
     ),
     scalacOptions ++= Seq(
       "-language:reflectiveCalls",
@@ -22,6 +31,7 @@ lazy val root = (project in file("."))
       "-Ymacro-annotations",
     ),
     addCompilerPlugin("org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full),
-  ).dependsOn(wbplumbing)
+  )
 
-lazy val wbplumbing = RootProject(uri("https://github.com/Martoni/WbPlumbing.git"))
+publishTo := Some("GitHub wbGPIO Martoni Apache Maven Packages" at "https://maven.pkg.github.com/Martoni/wbGPIO")
+publishMavenStyle := true
