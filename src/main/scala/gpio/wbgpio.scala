@@ -1,4 +1,4 @@
-package gpio 
+package gpio
 
 import chisel3._
 import circt.stage.ChiselStage
@@ -19,7 +19,7 @@ class WbGpio(val portsize: Int = 16) extends Module {
      val wbs = new WbSlave(portsize, 2, "gpio")
 
      /* tristate buffer port IO */
-     val gpio = new GpioPort(portsize) 
+     val gpio = new GpioPort(portsize)
   })
 
   val version = dontTouch(RegInit(1.U(8.W)))
