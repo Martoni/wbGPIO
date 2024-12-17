@@ -1,4 +1,4 @@
-package gpio 
+package gpio
 
 import chisel3._
 import circt.stage.ChiselStage
@@ -14,12 +14,12 @@ class GpioPort (val portsize: Int = 16) extends Bundle {
 }
 
 /* TODO: adding wishbone slave interface parameter in module params */
-class WbGpio(val portsize: Int = 16) extends Module {
+class WbGpio(val portsize: Int = 16, val wbfeature_err: Boolean = false) extends Module {
   val io = IO(new Bundle{
-     val wbs = new WbSlave(portsize, 2, "gpio")
+     val wbs = new WbSlave(portsize, 2, "gpio", wbfeature_err)
 
      /* tristate buffer port IO */
-     val gpio = new GpioPort(portsize) 
+     val gpio = new GpioPort(portsize)
   })
 
   val version = dontTouch(RegInit(1.U(8.W)))
