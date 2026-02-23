@@ -1,6 +1,7 @@
 package gpio
 
 import chisel3._
+import circt.stage.ChiselStage
 import chisel3.util._
 
 import scala.util.control.Breaks._
@@ -47,4 +48,21 @@ class GpioPortIntercon(gpioMaps: Seq[Range], portsize: Int) extends Module {
   }
 
   io.port.inport <> inportV.asUInt
+}
+
+object GpioPortIntercon extends App {
+  /*
+   * 1, 6, 7, 9 not connected
+   */
+  val gpioMap = Seq((0 to 0),
+                    (2 to 5),
+                    (8 to 8),
+                    (10 to 15))
+  ChiselStage.emitSystemVerilogFile(
+    new GpioPortIntercon(gpioMap, 16),
+    firtoolOpts = Array(
+      "-disable-all-randomization",
+      "--lowering-options=disallowLocalVariables", // avoid 'automatic logic'
+      "-strip-debug-info"),
+    args=args)
 }

@@ -11,15 +11,11 @@ import sys
 import cocotb
 import logging
 from cocotb.triggers import Timer
-from cocotb.result import raise_error
-from cocotb.result import TestError
-from cocotb.result import ReturnValue
 from cocotb.clock import Clock
 from cocotb.triggers import Timer
 from cocotb.triggers import RisingEdge
 from cocotb.triggers import FallingEdge
 from cocotb.triggers import ClockCycles
-from cocotb.binary import BinaryValue
 
 from cocotbext.wishbone.driver import WishboneMaster
 from cocotbext.wishbone.driver import WBOp
@@ -60,41 +56,36 @@ class WbGpio(object):
     def get_dut_version_str(self):
         return "{}".format(self._dut.version.value)
 
-    @cocotb.coroutine
-    def reset(self):
+    async def reset(self):
         self._dut.reset.value = 1
-        short_per = Timer(100, units="ns")
-        yield short_per
+        short_per = Timer(100, unit="ns")
+        await short_per
         self._dut.reset.value = 1
-        yield short_per
+        await short_per
         self._dut.reset.value = 0
-        yield short_per
+        await short_per
 
 @cocotb.test()#skip=True)
-def test_read_version(dut):
+async def test_read_version(dut):
     wbgpio = WbGpio(dut)
-    yield wbgpio.reset()
+    await wbgpio.reset()
     dut._log.info(f"Version {wbgpio.get_dut_version_str()}")
-    wbRes = yield wbgpio.wbs.send_cycle([WBOp(addr) for addr in range(4)])
+    wbRes = await wbgpio.wbs.send_cycle([WBOp(addr) for addr in range(4)])
     rvalues = [wb.datrd for wb in wbRes]
     dut._log.info(f"Returned values : {rvalues}")
-    if rvalues[0].binstr[-8:] != wbgpio.get_dut_version_str():
-        msg = (f"wrong version read {rvalues[0].binstr[-8:]}, " +
-              f"should be {wbgpio.get_dut_version_str()}")
-        dut.log.error(msg)
-        raise TestError(msg)
-    yield Timer(1, units="us")
+    assert str(rvalues[0])[-8:] == wbgpio.get_dut_version_str(), f"wrong version read {str(rvalues[0])[-8:]}, " + f"should be {wbgpio.get_dut_version_str()}"
+    await Timer(1, unit="us")
 
 @cocotb.test()#skip=True
-def test_change_dir_read_value(dut):
+async def test_change_dir_read_value(dut):
     """ Changing direction of some bits and read value """
     wbgpio = WbGpio(dut)
-    yield wbgpio.reset()
+    await wbgpio.reset()
     dut._log.info(f"Version {wbgpio.get_dut_version_str()}")
     dirv = 0xCAFE
-    wbRes = yield wbgpio.wbs.send_cycle([WBOp(wbgpio.DIRADDR, dirv),
+    wbRes = await wbgpio.wbs.send_cycle([WBOp(wbgpio.DIRADDR, dirv),
                                          WBOp(wbgpio.DIRADDR)])
-    rvalues = [wb.datrd.integer for wb in wbRes]
+    rvalues = [wb.datrd.to_unsigned() for wb in wbRes]
     dut._log.info(f"Returned values : {[hex(v) for v in rvalues]}")
     if rvalues[-1] != dirv:
         msg = (f"Wrong direction value {hex(rvalues[-1])}, " +
@@ -102,12 +93,11 @@ def test_change_dir_read_value(dut):
 
     testv = 0xCAFE
     dut.io_gpio_inport.value = testv
-    wbRes = yield wbgpio.wbs.send_cycle([WBOp(wbgpio.READADDR)])
-    readvalue = wbRes[0].datrd.integer
+    wbRes = await wbgpio.wbs.send_cycle([WBOp(wbgpio.READADDR)])
+    readvalue = wbRes[0].datrd.to_unsigned()
     wbgpio.log.info(f"read register : {hex(readvalue)}")
     if readvalue != testv:
         msg = (f"Wrong value {hex(readvalue)} read," +
                f" should be {hex(testv)}")
         wbgpio.log.error(msg)
         raise TestError(msg)
-    

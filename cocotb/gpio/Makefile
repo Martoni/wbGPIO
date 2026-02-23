@@ -56,7 +56,7 @@ PWD=$(shell pwd)
 
 VERILOG_DIR=$(PWD)/verilog
 VERILOG_SOURCES=$(VERILOG_DIR)/$(TOPLEVEL).sv
-MODULE=test_wbgpio
+COCOTB_TEST_MODULES=test_wbgpio
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 

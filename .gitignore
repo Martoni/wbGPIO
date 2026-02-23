@@ -6,4 +6,9 @@ cocotb/gpio/dump.vcd
 cocotb/gpio/sim_build/
 cocotb/gpio/verilog/
 
+cocotb/gpioportintercon/__pycache__/
+cocotb/gpioportintercon/dump.vcd
+cocotb/gpioportintercon/sim_build/
+cocotb/gpioportintercon/verilog/
+
 **.swp
